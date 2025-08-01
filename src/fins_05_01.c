@@ -81,8 +81,12 @@ int finslib_cpu_unit_data_read( struct fins_sys_tp *sys, struct fins_cpudata_tp 
 	memcpy( sys->model,   cpudata->model,   21 );
 	memcpy( sys->version, cpudata->version, 21 );
 
+	// PROTOTWIN: Add support for NX and NJ controllers
 	if      ( cpudata->model[0] == 'C'  &&  cpudata->model[1] == 'S' ) sys->plc_mode = FINS_MODE_CS;
 	else if ( cpudata->model[0] == 'C'  &&  cpudata->model[1] == 'J' ) sys->plc_mode = FINS_MODE_CS;
+	else if ( cpudata->model[0] == 'C'  &&  cpudata->model[1] == 'P' ) sys->plc_mode = FINS_MODE_CS;
+	else if ( cpudata->model[0] == 'N'  &&  cpudata->model[1] == 'X' ) sys->plc_mode = FINS_MODE_CS;
+	else if ( cpudata->model[0] == 'N'  &&  cpudata->model[1] == 'J' ) sys->plc_mode = FINS_MODE_CS;
 	else if ( cpudata->model[0] == 'C'  &&  cpudata->model[1] == 'V' ) sys->plc_mode = FINS_MODE_CV;
 	else                                                               sys->plc_mode = FINS_MODE_UNKNOWN;
 
