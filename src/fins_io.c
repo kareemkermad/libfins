@@ -338,7 +338,13 @@ struct fins_sys_tp *finslib_tcp_connect( struct fins_sys_tp *sys, const char *ad
 struct fins_sys_tp *finslib_udp_connect( struct fins_sys_tp *sys, const char *address, uint16_t port, uint8_t local_net, uint8_t local_node, uint8_t local_unit, uint8_t remote_net, uint8_t remote_node, uint8_t remote_unit, int *error_val, int error_max ) {
 
 	struct sockaddr_in ws_addr;
-	struct timeval tv ={ 0 };
+
+	// PROTOTWIN: Fix invalid UDP timeout on Windows
+#if defined(_WIN32)
+	int tv = 0;
+#else
+	struct timeval tv = { 0 };
+#endif
 
 	if ( sys != NULL  &&  finslib_monotonic_sec_timer() < sys->timeout + FINS_TIMEOUT  &&  sys->timeout > 0 ) {
 
@@ -381,13 +387,23 @@ struct fins_sys_tp *finslib_udp_connect( struct fins_sys_tp *sys, const char *ad
 
 	sys->sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
 
-	tv.tv_sec  = SEND_TIMEOUT;
+	// PROTOTWIN: Fix invalid UDP timeout on Windows
+#if defined(_WIN32)
+	tv = SEND_TIMEOUT * 1000;
+#else
+	tv.tv_sec = SEND_TIMEOUT;
 	tv.tv_usec = 0;
+#endif  /* ! defined(_WIN32) */
 
 	if ( setsockopt( sys->sockfd, SOL_SOCKET, SO_SNDTIMEO, (setsockopt_tp *) & tv, sizeof(tv) ) < 0 ) return fins_close_socket_with_error( sys, error_val );
 
-	tv.tv_sec  = RECV_TIMEOUT;
+	// PROTOTWIN: Fix invalid UDP timeout on Windows
+#if defined(_WIN32)
+	tv = RECV_TIMEOUT * 1000;
+#else
+	tv.tv_sec = RECV_TIMEOUT;
 	tv.tv_usec = 0;
+#endif  /* ! defined(_WIN32) */
 
 	if ( setsockopt( sys->sockfd, SOL_SOCKET, SO_RCVTIMEO, (setsockopt_tp *) & tv, sizeof(tv) ) < 0 ) return fins_close_socket_with_error( sys, error_val );
 
